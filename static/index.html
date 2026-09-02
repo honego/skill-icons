@@ -3,13 +3,254 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Showcase the languages, frameworks, and tools you use on your GitHub or resumé with ease!"
+    />
+    <meta name="theme-color" content="#F4F2ED" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <title>Skill Icons</title>
+    <style>
+      *,
+      ::before,
+      ::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          "Helvetica Neue",
+          Arial,
+          "Noto Sans",
+          sans-serif,
+          "Apple Color Emoji",
+          "Segoe UI Emoji",
+          "Segoe UI Symbol",
+          "Noto Color Emoji";
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background: #f4f2ed;
+        color: #000;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: inherit;
+      }
+
+      p,
+      h1,
+      h2 {
+        margin: 0;
+      }
+
+      img,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 56rem;
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 2rem 0.75rem 0;
+      }
+
+      .logo {
+        width: auto;
+        height: 4rem;
+        margin: 0 auto;
+      }
+
+      .tagline {
+        margin-top: 0.75rem;
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.75rem;
+      }
+
+      .cards {
+        display: flex;
+        flex-direction: column;
+        margin-top: 1rem;
+      }
+
+      .card {
+        flex: 1 1 0%;
+        margin: 0.5rem 0.5rem 0;
+        padding: 1.5rem;
+        overflow: hidden;
+        background: #fff;
+        border-radius: 0.5rem;
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 10%),
+          0 1px 2px rgb(0 0 0 / 6%);
+        cursor: pointer;
+        transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .card + .card {
+        margin-top: 1rem;
+      }
+
+      .card:hover {
+        transform: translateY(-0.25rem);
+      }
+
+      .card h2 {
+        display: flex;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 2rem;
+      }
+
+      .card p {
+        margin-top: 0.75rem;
+        color: #4b5563;
+      }
+
+      .badge {
+        margin-left: 0.5rem;
+        padding: 0 0.5rem;
+        border-radius: 9999px;
+        color: #fff;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        white-space: nowrap;
+      }
+
+      .badge-new {
+        background: #3b82f6;
+      }
+
+      .badge-soon {
+        background: #f59e0b;
+      }
+
+      .showcase {
+        padding: 0 0.75rem;
+      }
+
+      .section-title {
+        margin: 1rem 0 0.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.75rem;
+      }
+
+      .showcase img {
+        width: 100%;
+        height: auto;
+        border-radius: 0.5rem;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 2rem 0;
+      }
+
+      .social {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: #4b5563;
+        transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .social:hover {
+        color: #1f2937;
+      }
+
+      @media (min-width: 640px) {
+        .page {
+          padding: 6rem 1.5rem 0;
+        }
+
+        .cards {
+          flex-direction: row;
+        }
+
+        .card + .card {
+          margin-top: 0.5rem;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .page {
+          padding-right: 2rem;
+          padding-left: 2rem;
+        }
+      }
+    </style>
   </head>
   <body>
-    <main>
-      <h1>Skill Icons</h1>
-      <p>Generate skill icon badges from the original Skill Icons and colored Devicon catalogs.</p>
-      <p><a href="/api/icons">View all supported icon IDs</a></p>
+    <main class="page">
+      <header>
+        <img class="logo" src="/logo.svg" alt="Skill Icons" />
+        <p class="tagline">Showcase your skills on your GitHub or resumé with ease!</p>
+      </header>
+
+      <section class="cards" aria-label="Get started">
+        <a class="card" href="https://github.com/honeok/skill-icons#readme">
+          <h2>Get Started <span class="badge badge-new">New</span></h2>
+          <p>
+            Click here to redirect to the documentation on how to add the icons to your readme, and how to format the
+            URLs!
+          </p>
+        </a>
+
+        <div class="card">
+          <h2>Image Builder <span class="badge badge-soon">Coming Soon</span></h2>
+          <p>
+            A web editor to select, configure, and export the icons. This feature is currently in development and isn't
+            available yet!
+          </p>
+        </div>
+      </section>
+
+      <section class="showcase">
+        <h1 class="section-title">Example:</h1>
+        <img src="/example-dark.png" alt="Skill Icons used in a GitHub profile README" />
+
+        <h1 class="section-title">All Icons:</h1>
+        <img src="/icons?i=all" alt="All supported Skill Icons" />
+      </section>
+
+      <footer class="footer">
+        <a href="https://github.com/honeok/skill-icons" target="_blank" rel="noreferrer" aria-label="GitHub">
+          <svg class="social" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12 2.247a10 10 0 0 0-3.162 19.487c.5.088.687-.212.687-.475c0-.237-.012-1.025-.012-1.862c-2.513.462-3.163-.613-3.363-1.175a3.636 3.636 0 0 0-1.025-1.413c-.35-.187-.85-.65-.013-.662a2.001 2.001 0 0 1 1.538 1.025a2.137 2.137 0 0 0 2.912.825a2.104 2.104 0 0 1 .638-1.338c-2.225-.25-4.55-1.112-4.55-4.937a3.892 3.892 0 0 1 1.025-2.688a3.594 3.594 0 0 1 .1-2.65s.837-.262 2.75 1.025a9.427 9.427 0 0 1 5 0c1.912-1.3 2.75-1.025 2.75-1.025a3.593 3.593 0 0 1 .1 2.65a3.869 3.869 0 0 1 1.025 2.688c0 3.837-2.338 4.687-4.563 4.937a2.368 2.368 0 0 1 .675 1.85c0 1.338-.012 2.413-.012 2.75c0 .263.187.575.687.475A10.005 10.005 0 0 0 12 2.247z"
+            />
+          </svg>
+        </a>
+        <a href="https://twitter.com/cdngdev" target="_blank" rel="noreferrer" aria-label="Twitter">
+          <svg class="social" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M22.46 6c-.77.35-1.6.58-2.46.69c.88-.53 1.56-1.37 1.88-2.38c-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29c0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15c0 1.49.75 2.81 1.91 3.56c-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07a4.28 4.28 0 0 0 4 2.98a8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21C16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56c.84-.6 1.56-1.36 2.14-2.23z"
+            />
+          </svg>
+        </a>
+      </footer>
     </main>
   </body>
 </html>
