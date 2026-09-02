@@ -5,6 +5,7 @@ const ONE_ICON = 48;
 const GRID_SIZE = 300;
 const GRID_GAP = 44;
 const SCALE = ONE_ICON / (GRID_SIZE - GRID_GAP);
+const ICON_CACHE_CONTROL = "public, max-age=3600, stale-while-revalidate=86400";
 
 let catalogPromise;
 
@@ -76,7 +77,7 @@ function parseShortNames(names, catalog, theme = "dark") {
     .map((name) => (catalog.themedIcons.has(name) ? `${name}-${theme}` : name));
 }
 
-async function handleRequest(request, env) {
+async function handleRequest(request, env, ctx) {
   const { pathname, searchParams } = new URL(request.url);
   const path = pathname.replace(/^\/|\/$/g, "");
 
@@ -101,6 +102,20 @@ async function handleRequest(request, env) {
       });
     }
 
+    let cache;
+    let cacheKey;
+    if (request.method === "GET" && iconParam === "all") {
+      const cacheUrl = new URL("/icons", request.url);
+      cacheUrl.searchParams.set("i", "all");
+      cacheUrl.searchParams.set("theme", theme || "dark");
+      cacheUrl.searchParams.set("perline", String(perLine));
+      cache = caches.default;
+      cacheKey = new Request(cacheUrl);
+
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) return cachedResponse;
+    }
+
     const catalog = await loadCatalog(request, env);
     const iconShortNames = iconParam === "all" ? catalog.iconNameList : iconParam.split(",");
     const iconNames = parseShortNames(iconShortNames, catalog, theme || undefined);
@@ -111,9 +126,15 @@ async function handleRequest(request, env) {
       });
     }
 
-    return new Response(generateSvg(iconNames, perLine, catalog.icons), {
-      headers: { "Content-Type": "image/svg+xml;charset=UTF-8" },
+    const response = new Response(generateSvg(iconNames, perLine, catalog.icons), {
+      headers: {
+        "Cache-Control": ICON_CACHE_CONTROL,
+        "Content-Type": "image/svg+xml;charset=UTF-8",
+      },
     });
+
+    if (cache && cacheKey) ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
   }
 
   if (path === "api/icons") {
@@ -134,9 +155,9 @@ async function handleRequest(request, env) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     try {
-      return await handleRequest(request, env);
+      return await handleRequest(request, env, ctx);
     } catch (error) {
       return new Response(error?.stack || String(error), { status: 500 });
     }

@@ -52,7 +52,13 @@ function renderOriginalSkillIcon(name, icon) {
   const { left, top, width, height } = getIconifyDimensions(icon, skillIconSet);
   const title = escapeXml(removeThemeSuffix(name).replaceAll("-", " "));
 
-  return `<svg width="${TILE_SIZE}" height="${TILE_SIZE}" viewBox="${left} ${top} ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}" data-source="@iconify-json/skill-icons"><title>${title}</title>${icon.body}</svg>`;
+  return [
+    `<svg width="${TILE_SIZE}" height="${TILE_SIZE}"`,
+    ` viewBox="${left} ${top} ${width} ${height}"`,
+    ' xmlns="http://www.w3.org/2000/svg" role="img"',
+    ` aria-label="${title}" data-source="@iconify-json/skill-icons">`,
+    `<title>${title}</title>${icon.body}</svg>`,
+  ].join("");
 }
 
 function renderTiledIcon({ body, dimensions, name, source, themeName, foreground }) {
@@ -60,7 +66,20 @@ function renderTiledIcon({ body, dimensions, name, source, themeName, foreground
   const title = escapeXml(name.replaceAll("-", " "));
   const { left, top, width, height } = dimensions;
 
-  return `<svg width="${TILE_SIZE}" height="${TILE_SIZE}" viewBox="0 0 ${TILE_SIZE} ${TILE_SIZE}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}" data-source="${source}"><title>${title}</title><rect width="${TILE_SIZE}" height="${TILE_SIZE}" rx="${BORDER_RADIUS}" fill="${theme.background}"/><svg x="${ICON_PADDING}" y="${ICON_PADDING}" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="${left} ${top} ${width} ${height}" preserveAspectRatio="xMidYMid meet" color="${foreground}">${body}</svg></svg>`;
+  return [
+    `<svg width="${TILE_SIZE}" height="${TILE_SIZE}"`,
+    ` viewBox="0 0 ${TILE_SIZE} ${TILE_SIZE}" fill="none"`,
+    ' xmlns="http://www.w3.org/2000/svg" role="img"',
+    ` aria-label="${title}" data-source="${source}">`,
+    `<title>${title}</title>`,
+    `<rect width="${TILE_SIZE}" height="${TILE_SIZE}"`,
+    ` rx="${BORDER_RADIUS}" fill="${theme.background}"/>`,
+    `<svg x="${ICON_PADDING}" y="${ICON_PADDING}"`,
+    ` width="${ICON_SIZE}" height="${ICON_SIZE}"`,
+    ` viewBox="${left} ${top} ${width} ${height}"`,
+    ` preserveAspectRatio="xMidYMid meet" color="${foreground}">`,
+    `${body}</svg></svg>`,
+  ].join("");
 }
 
 function getColoredDevicons() {
