@@ -1,16 +1,20 @@
 {
-	"name": "skill-icons",
-	"version": "1.0.0",
-	"main": "index.js",
-	"license": "MIT",
-	"scripts": {
-		"dev": "node build.js && miniflare --watch",
-		"build": "node build.js",
-		"deploy": "node build.js && wrangler publish"
-	},
-	"devDependencies": {
-		"@cloudflare/wrangler": "^1.19.8",
-		"miniflare": "^2.3.0",
-		"prettier": "^2.5.1"
-	}
+  "name": "skill-icons",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "verify:build": "node scripts/verify-build.js",
+    "deploy": "npm run build && npm run verify:build && wrangler deploy"
+  },
+  "devDependencies": {
+    "simple-icons": "^16.29.0",
+    "wrangler": "^4.127.1"
+  }
 }
