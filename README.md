@@ -4,9 +4,9 @@
 
 ---
 
-This fork keeps the familiar Skill Icons routes and SVG layout while sourcing its
-icon catalog from the official [Simple Icons](https://simpleicons.org/) npm
-package. The repository does not maintain individual icon SVG files.
+This fork keeps the familiar Skill Icons routes and SVG layout while sourcing
+colored assets from the original Skill Icons collection and Devicon npm packages.
+The repository does not maintain individual icon SVG files.
 
 ## Usage
 
@@ -49,26 +49,21 @@ Existing short aliases such as `js`, `ts`, `py`, `go`, `k8s`, `cf`, `postgres`,
 
 GitHub Actions is the source of truth for generated assets:
 
-1. `npm ci` installs the locked Simple Icons and Wrangler 4 versions.
-2. The build discovers every icon exported by Simple Icons.
-3. Each path is centered without stretching in a 256 × 256 tile with a 180 ×
-   180 icon area and consistent rounded backgrounds.
-4. Brand colors are retained when they have enough contrast; otherwise an
-   automatic light or dark foreground is used.
-5. Dark and light variants are written to `dist/icons.json`.
-6. The generated count, variants, JSON, tile size, and Wrangler bundle are
+1. `npm ci` installs the locked Skill Icons, Devicon, and Wrangler 4 versions.
+2. Exact original Skill Icons SVGs are imported first, including their gradients,
+   colors, backgrounds, and existing dark/light variants.
+3. Missing IDs are supplemented from Devicon's colored `*-original` variants.
+4. Devicon additions are centered without stretching in a 256 × 256 tile with a
+   180 × 180 icon area and matching rounded backgrounds.
+5. No monochrome fallback icons are generated.
+6. The complete SVG map is written to `dist/icons.json`.
+7. The generated count, variants, JSON, tile size, and Wrangler bundle are
    verified before deployment.
 
-Updating the `simple-icons` dependency is enough to pick up upstream additions;
-no source list or SVG directory needs to be edited. Requests for new brand icons
-should be made in the
-[Simple Icons repository](https://github.com/simple-icons/simple-icons).
-
-Please review the Simple Icons
-[legal disclaimer](https://github.com/simple-icons/simple-icons/blob/develop/DISCLAIMER.md)
-before using its brand assets.
+Updating either icon package picks up its upstream additions; no source list or
+SVG directory needs to be edited.
 
 ## License
 
-This project is available under the [MIT License](./LICENSE). Simple Icons assets
-are distributed under their upstream terms.
+This project is available under the [MIT License](./LICENSE). Skill Icons and
+Devicon assets are distributed under their upstream terms.

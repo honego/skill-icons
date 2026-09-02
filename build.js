@@ -1,14 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import * as simpleIcons from "simple-icons";
+import { icons as skillIconSet } from "@iconify-json/skill-icons";
+import { icons as deviconSet } from "@iconify-json/devicon";
+import { SHORT_NAMES } from "./aliases.js";
 
 const TILE_SIZE = 256;
 const ICON_SIZE = 180;
 const ICON_PADDING = (TILE_SIZE - ICON_SIZE) / 2;
-const BORDER_RADIUS = 44;
-const SOURCE_VIEWBOX_SIZE = 24;
-const MIN_CONTRAST_RATIO = 3;
+const BORDER_RADIUS = 60;
+const DEVICON_VARIANT_SUFFIX = "-original";
 
 const THEMES = {
   dark: {
@@ -25,22 +26,6 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(projectRoot, "dist");
 const staticDir = path.join(projectRoot, "static");
 
-function relativeLuminance(hex) {
-  const channels = hex
-    .replace("#", "")
-    .match(/.{2}/g)
-    .map((channel) => Number.parseInt(channel, 16) / 255)
-    .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4));
-
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-}
-
-function contrastRatio(first, second) {
-  const lighter = Math.max(relativeLuminance(first), relativeLuminance(second));
-  const darker = Math.min(relativeLuminance(first), relativeLuminance(second));
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
 function escapeXml(value) {
   return value
     .replaceAll("&", "&amp;")
@@ -50,57 +35,87 @@ function escapeXml(value) {
     .replaceAll("'", "&apos;");
 }
 
-function renderIcon(icon, themeName) {
+function removeThemeSuffix(name) {
+  return name.replace(/-(?:dark|light)$/, "");
+}
+
+function getIconifyDimensions(icon, iconSet) {
+  return {
+    left: icon.left ?? iconSet.left ?? 0,
+    top: icon.top ?? iconSet.top ?? 0,
+    width: icon.width ?? iconSet.width ?? 16,
+    height: icon.height ?? iconSet.height ?? 16,
+  };
+}
+
+function renderOriginalSkillIcon(name, icon) {
+  const { left, top, width, height } = getIconifyDimensions(icon, skillIconSet);
+  const title = escapeXml(removeThemeSuffix(name).replaceAll("-", " "));
+
+  return `<svg width="${TILE_SIZE}" height="${TILE_SIZE}" viewBox="${left} ${top} ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}" data-source="@iconify-json/skill-icons"><title>${title}</title>${icon.body}</svg>`;
+}
+
+function renderTiledIcon({ body, dimensions, name, source, themeName, foreground }) {
   const theme = THEMES[themeName];
-  const brandColor = `#${icon.hex.toUpperCase()}`;
-  const foreground =
-    contrastRatio(brandColor, theme.background) >= MIN_CONTRAST_RATIO ? brandColor : theme.fallbackForeground;
-  const scale = ICON_SIZE / SOURCE_VIEWBOX_SIZE;
-  const title = escapeXml(icon.title);
+  const title = escapeXml(name.replaceAll("-", " "));
+  const { left, top, width, height } = dimensions;
 
-  return `<svg width="${TILE_SIZE}" height="${TILE_SIZE}" viewBox="0 0 ${TILE_SIZE} ${TILE_SIZE}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}" data-slug="${icon.slug}" data-brand-color="${brandColor}"><title>${title}</title><rect width="${TILE_SIZE}" height="${TILE_SIZE}" rx="${BORDER_RADIUS}" fill="${theme.background}"/><path d="${icon.path}" fill="${foreground}" transform="translate(${ICON_PADDING} ${ICON_PADDING}) scale(${scale})"/></svg>`;
+  return `<svg width="${TILE_SIZE}" height="${TILE_SIZE}" viewBox="0 0 ${TILE_SIZE} ${TILE_SIZE}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}" data-source="${source}"><title>${title}</title><rect width="${TILE_SIZE}" height="${TILE_SIZE}" rx="${BORDER_RADIUS}" fill="${theme.background}"/><svg x="${ICON_PADDING}" y="${ICON_PADDING}" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="${left} ${top} ${width} ${height}" preserveAspectRatio="xMidYMid meet" color="${foreground}">${body}</svg></svg>`;
 }
 
-function getUpstreamIcons() {
-  const icons = Object.values(simpleIcons)
-    .filter(
-      (icon) =>
-        icon &&
-        typeof icon === "object" &&
-        typeof icon.slug === "string" &&
-        typeof icon.title === "string" &&
-        typeof icon.hex === "string" &&
-        typeof icon.path === "string" &&
-        typeof icon.svg === "string",
-    )
-    .sort((first, second) => first.slug.localeCompare(second.slug));
-
-  if (icons.length === 0) {
-    throw new Error("Simple Icons did not export any icons.");
-  }
-
-  const uniqueSlugs = new Set(icons.map((icon) => icon.slug));
-  if (uniqueSlugs.size !== icons.length) {
-    throw new Error("Simple Icons exported duplicate slugs.");
-  }
-
-  return icons;
+function getDeviconOriginals() {
+  return Object.entries(deviconSet.icons)
+    .filter(([name, icon]) => name.endsWith(DEVICON_VARIANT_SUFFIX) && typeof icon.body === "string")
+    .map(([name, icon]) => ({
+      name: name.slice(0, -DEVICON_VARIANT_SUFFIX.length),
+      icon,
+    }))
+    .sort((first, second) => first.name.localeCompare(second.name));
 }
 
-function buildIconMap(upstreamIcons) {
-  const result = {};
+function hasCanonicalIcon(iconMap, name) {
+  return name in iconMap || `${name}-dark` in iconMap || `${name}-light` in iconMap;
+}
 
-  for (const icon of upstreamIcons) {
-    for (const themeName of Object.keys(THEMES)) {
-      result[`${icon.slug}-${themeName}`] = renderIcon(icon, themeName);
+function resolvesToExistingAlias(iconMap, name) {
+  return SHORT_NAMES[name]?.some((candidate) => hasCanonicalIcon(iconMap, candidate)) ?? false;
+}
+
+function addOriginalSkillIcons(iconMap) {
+  for (const [name, icon] of Object.entries(skillIconSet.icons).sort(([first], [second]) =>
+    first.localeCompare(second),
+  )) {
+    iconMap[name] = renderOriginalSkillIcon(name, icon);
+  }
+}
+
+function addDeviconFallbacks(iconMap) {
+  let added = 0;
+
+  for (const { name, icon } of getDeviconOriginals()) {
+    if (hasCanonicalIcon(iconMap, name) || resolvesToExistingAlias(iconMap, name)) continue;
+
+    const dimensions = getIconifyDimensions(icon, deviconSet);
+    for (const [themeName, theme] of Object.entries(THEMES)) {
+      iconMap[`${name}-${themeName}`] = renderTiledIcon({
+        body: icon.body,
+        dimensions,
+        name,
+        source: "@iconify-json/devicon",
+        themeName,
+        foreground: theme.fallbackForeground,
+      });
     }
+    added += 1;
   }
 
-  return result;
+  return added;
 }
 
-const upstreamIcons = getUpstreamIcons();
-const iconMap = buildIconMap(upstreamIcons);
+const iconMap = {};
+
+addOriginalSkillIcons(iconMap);
+const deviconFallbackCount = addDeviconFallbacks(iconMap);
 
 fs.rmSync(distDir, { recursive: true, force: true });
 fs.mkdirSync(distDir, { recursive: true });
@@ -109,4 +124,6 @@ for (const entry of fs.readdirSync(staticDir, { withFileTypes: true })) {
 }
 fs.writeFileSync(path.join(distDir, "icons.json"), `${JSON.stringify(iconMap)}\n`, "utf8");
 
-console.log(`Generated ${Object.keys(iconMap).length} themed SVGs from ${upstreamIcons.length} Simple Icons.`);
+console.log(
+  `Generated ${Object.keys(iconMap).length} SVGs: ${Object.keys(skillIconSet.icons).length} original Skill Icons and ${deviconFallbackCount * 2} colored Devicon variants.`,
+);

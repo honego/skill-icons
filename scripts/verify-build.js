@@ -1,14 +1,21 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import * as simpleIcons from "simple-icons";
+import { icons as skillIconSet } from "@iconify-json/skill-icons";
+import { icons as deviconSet } from "@iconify-json/devicon";
+import { SHORT_NAMES } from "../aliases.js";
 
+const DEVICON_VARIANT_SUFFIX = "-original";
 const projectRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const iconFile = path.join(projectRoot, "dist", "icons.json");
 const legacyIconDirectory = path.join(projectRoot, "icons");
 
 function fail(message) {
   throw new Error(`Build verification failed: ${message}`);
+}
+
+function removeThemeSuffix(name) {
+  return name.replace(/-(?:dark|light)$/, "");
 }
 
 if (fs.existsSync(legacyIconDirectory)) {
@@ -26,38 +33,60 @@ try {
   fail(`dist/icons.json is not valid JSON (${error.message})`);
 }
 
-const upstreamIcons = Object.values(simpleIcons).filter(
-  (icon) =>
-    icon &&
-    typeof icon === "object" &&
-    typeof icon.slug === "string" &&
-    typeof icon.title === "string" &&
-    typeof icon.hex === "string" &&
-    typeof icon.path === "string" &&
-    typeof icon.svg === "string",
-);
-
-if (upstreamIcons.length === 0) {
-  fail("Simple Icons exported no icons");
+const generatedNames = new Set(Object.keys(icons));
+const skillIconNames = Object.keys(skillIconSet.icons);
+const skillCanonicalNames = new Set(skillIconNames.map(removeThemeSuffix));
+const deviconNames = [
+  ...new Set(
+    Object.keys(deviconSet.icons)
+      .filter((name) => name.endsWith(DEVICON_VARIANT_SUFFIX))
+      .map((name) => name.slice(0, -DEVICON_VARIANT_SUFFIX.length)),
+  ),
+].sort();
+const selectedCanonicalNames = new Set(skillCanonicalNames);
+const deviconFallbackNames = [];
+for (const name of deviconNames) {
+  const resolvesToSelectedAlias =
+    SHORT_NAMES[name]?.some((candidate) => selectedCanonicalNames.has(candidate)) ?? false;
+  if (selectedCanonicalNames.has(name) || resolvesToSelectedAlias) continue;
+  selectedCanonicalNames.add(name);
+  deviconFallbackNames.push(name);
 }
 
-for (const icon of upstreamIcons) {
+if (skillIconNames.length === 0 || deviconNames.length === 0) {
+  fail("one or more upstream icon packages exported no icons");
+}
+
+for (const name of skillIconNames) {
+  const svg = icons[name];
+  if (typeof svg !== "string" || !svg.includes('data-source="@iconify-json/skill-icons"')) {
+    fail(`original Skill Icon ${name} is missing or was overwritten`);
+  }
+}
+
+for (const name of deviconFallbackNames) {
   for (const theme of ["dark", "light"]) {
-    const key = `${icon.slug}-${theme}`;
+    const key = `${name}-${theme}`;
     const svg = icons[key];
-    if (typeof svg !== "string") {
-      fail(`missing ${key}`);
-    }
-    if (!svg.includes('width="256"') || !svg.includes('height="256"')) {
-      fail(`${key} does not use the configured tile size`);
+    if (typeof svg !== "string" || !svg.includes('data-source="@iconify-json/devicon"')) {
+      fail(`Devicon fallback ${key} is missing or has the wrong source`);
     }
   }
 }
 
-const expectedSvgCount = upstreamIcons.length * 2;
-const generatedSvgCount = Object.keys(icons).length;
+for (const [name, svg] of Object.entries(icons)) {
+  if (typeof svg !== "string") {
+    fail(`${name} is not an SVG string`);
+  }
+  if (!svg.includes('width="256"') || !svg.includes('height="256"')) {
+    fail(`${name} does not use the configured tile size`);
+  }
+}
+
+const expectedSvgCount = skillIconNames.length + deviconFallbackNames.length * 2;
+const generatedSvgCount = generatedNames.size;
 if (generatedSvgCount !== expectedSvgCount) {
   fail(`expected ${expectedSvgCount} SVGs, found ${generatedSvgCount}`);
 }
 
-console.log(`Verified ${generatedSvgCount} dark/light SVGs for ${upstreamIcons.length} icons.`);
+console.log(`Verified ${generatedSvgCount} SVGs with Skill Icons → colored Devicon source priority.`);

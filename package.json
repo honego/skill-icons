@@ -14,7 +14,8 @@
     "deploy": "npm run build && npm run verify:build && wrangler deploy"
   },
   "devDependencies": {
-    "simple-icons": "^16.29.0",
+    "@iconify-json/devicon": "^1.2.62",
+    "@iconify-json/skill-icons": "^1.2.3",
     "wrangler": "^4.127.1"
   }
 }
