@@ -9,7 +9,7 @@ const TILE_SIZE = 256;
 const ICON_SIZE = 180;
 const ICON_PADDING = (TILE_SIZE - ICON_SIZE) / 2;
 const BORDER_RADIUS = 60;
-const DEVICON_VARIANT_SUFFIX = "-original";
+const DEVICON_WORDMARK_SUFFIX = "-wordmark";
 
 const THEMES = {
   dark: {
@@ -63,13 +63,10 @@ function renderTiledIcon({ body, dimensions, name, source, themeName, foreground
   return `<svg width="${TILE_SIZE}" height="${TILE_SIZE}" viewBox="0 0 ${TILE_SIZE} ${TILE_SIZE}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}" data-source="${source}"><title>${title}</title><rect width="${TILE_SIZE}" height="${TILE_SIZE}" rx="${BORDER_RADIUS}" fill="${theme.background}"/><svg x="${ICON_PADDING}" y="${ICON_PADDING}" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="${left} ${top} ${width} ${height}" preserveAspectRatio="xMidYMid meet" color="${foreground}">${body}</svg></svg>`;
 }
 
-function getDeviconOriginals() {
+function getColoredDevicons() {
   return Object.entries(deviconSet.icons)
-    .filter(([name, icon]) => name.endsWith(DEVICON_VARIANT_SUFFIX) && typeof icon.body === "string")
-    .map(([name, icon]) => ({
-      name: name.slice(0, -DEVICON_VARIANT_SUFFIX.length),
-      icon,
-    }))
+    .filter(([name, icon]) => !name.endsWith(DEVICON_WORDMARK_SUFFIX) && typeof icon.body === "string")
+    .map(([name, icon]) => ({ name, icon }))
     .sort((first, second) => first.name.localeCompare(second.name));
 }
 
@@ -92,7 +89,7 @@ function addOriginalSkillIcons(iconMap) {
 function addDeviconFallbacks(iconMap) {
   let added = 0;
 
-  for (const { name, icon } of getDeviconOriginals()) {
+  for (const { name, icon } of getColoredDevicons()) {
     if (hasCanonicalIcon(iconMap, name) || resolvesToExistingAlias(iconMap, name)) continue;
 
     const dimensions = getIconifyDimensions(icon, deviconSet);

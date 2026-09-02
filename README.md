@@ -52,7 +52,7 @@ GitHub Actions is the source of truth for generated assets:
 1. `npm ci` installs the locked Skill Icons, Devicon, and Wrangler 4 versions.
 2. Exact original Skill Icons SVGs are imported first, including their gradients,
    colors, backgrounds, and existing dark/light variants.
-3. Missing IDs are supplemented from Devicon's colored `*-original` variants.
+3. Missing IDs are supplemented from Devicon's colored, non-wordmark icons.
 4. Devicon additions are centered without stretching in a 256 × 256 tile with a
    180 × 180 icon area and matching rounded backgrounds.
 5. No monochrome fallback icons are generated.

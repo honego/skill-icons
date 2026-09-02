@@ -5,7 +5,7 @@ import { icons as skillIconSet } from "@iconify-json/skill-icons";
 import { icons as deviconSet } from "@iconify-json/devicon";
 import { SHORT_NAMES } from "../aliases.js";
 
-const DEVICON_VARIANT_SUFFIX = "-original";
+const DEVICON_WORDMARK_SUFFIX = "-wordmark";
 const projectRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const iconFile = path.join(projectRoot, "dist", "icons.json");
 const legacyIconDirectory = path.join(projectRoot, "icons");
@@ -36,13 +36,10 @@ try {
 const generatedNames = new Set(Object.keys(icons));
 const skillIconNames = Object.keys(skillIconSet.icons);
 const skillCanonicalNames = new Set(skillIconNames.map(removeThemeSuffix));
-const deviconNames = [
-  ...new Set(
-    Object.keys(deviconSet.icons)
-      .filter((name) => name.endsWith(DEVICON_VARIANT_SUFFIX))
-      .map((name) => name.slice(0, -DEVICON_VARIANT_SUFFIX.length)),
-  ),
-].sort();
+const deviconNames = Object.entries(deviconSet.icons)
+  .filter(([name, icon]) => !name.endsWith(DEVICON_WORDMARK_SUFFIX) && typeof icon.body === "string")
+  .map(([name]) => name)
+  .sort();
 const selectedCanonicalNames = new Set(skillCanonicalNames);
 const deviconFallbackNames = [];
 for (const name of deviconNames) {
