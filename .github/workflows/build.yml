@@ -1,4 +1,5 @@
-name: Build and deploy
+---
+name: "Build"
 
 on:
   pull_request:
@@ -7,39 +8,42 @@ on:
       - dev
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
-concurrency:
-  group: skill-icons-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  build-and-deploy:
+  build:
+    name: "Build"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - name: Check out repository
+      - name: "Checkout repository"
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: "Setup node"
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: stable
           cache: npm
 
-      - name: Install dependencies
+      - name: "Install dependencies"
         run: npm ci
 
-      - name: Build generated icon assets
+      - name: "Build generated icon assets"
         run: npm run build
 
-      - name: Verify generated icon assets
+      - name: "Verify generated icon assets"
         run: npm run verify:build
 
-      - name: Verify Wrangler bundle
+      - name: "Verify wrangler bundle"
         run: npx wrangler deploy --dry-run --outdir .wrangler-build
 
-      - name: Deploy to Cloudflare Workers
+      - name: "Deploy to cloudflare"
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
         uses: cloudflare/wrangler-action@v4
         with:
