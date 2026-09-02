@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -41,6 +41,7 @@ jobs:
 
       - name: Deploy to Cloudflare Workers
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        run: npx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
